@@ -33,7 +33,7 @@ contract Flowy is ERC721URIStorage, IXReceiver {
     uint256 public immutable slippage = 10000;
 
     /**
-     * @dev Generate NFT for the given NFT
+     * @dev Constructor
      * @param _connext Connext address on given chain
      * @param _sourceToken Source token address
      * @param _destinationToken Destination token address
@@ -62,8 +62,8 @@ contract Flowy is ERC721URIStorage, IXReceiver {
      */
     function generateNFT(uint256 tokenId) public view returns (string memory) {
         bytes memory svg = abi.encodePacked(
-            '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">',
-            '<text x="50" y="50" text-anchor="middle">',
+            '<svg width="100%" height="100%" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">',
+            '<text x="100" y="100" text-anchor="middle">',
             "&lt;",
             currAmount(),
             "&gt;",
@@ -87,7 +87,7 @@ contract Flowy is ERC721URIStorage, IXReceiver {
     function getTokenURI(uint256 tokenId) public view returns (string memory) {
         bytes memory dataURI = abi.encodePacked(
             "{",
-            '"name": "Flowy NFT #',
+            '"name": "Flowy NFT',
             tokenId.toString(),
             '",',
             '"description": "NFT that can be streamed cross-chain.",',
@@ -107,20 +107,41 @@ contract Flowy is ERC721URIStorage, IXReceiver {
     }
 
     /**
+     * @dev Overriden token uri functionality
+     * @param tokenId Token id of the required NFT
+     */
+    function tokenURI(
+        uint256 tokenId
+    ) public view virtual override returns (string memory) {
+        _requireMinted(tokenId);
+        return getTokenURI(tokenId);
+    }
+
+    /**
+     * @dev Get current blockchain time
+     */
+    function getTimestamp() public view returns (uint256) {
+        return block.timestamp;
+    }
+
+    /**
      * @dev Get currently streamed/streaming amount
      */
-    function currAmount() public view returns (uint256) {
+    function currAmount() public view returns (string memory) {
         if (streamReference == 0) {
-            return streamAmount;
+            return Strings.toString(streamAmount);
         } else {
             if (streamType == 0) {
                 // stream sender
                 if ((block.timestamp - streamReference) >= streamAmount) {
                     // complete stream sent
-                    return 0;
+                    return Strings.toString(0);
                 } else {
                     // sending stream
-                    return streamAmount - (block.timestamp - streamReference);
+                    return
+                        Strings.toString(
+                            streamAmount - (block.timestamp - streamReference)
+                        );
                 }
             } else {
                 // stream receiver
@@ -129,10 +150,13 @@ contract Flowy is ERC721URIStorage, IXReceiver {
                     streamMax
                 ) {
                     // complete stream received
-                    return streamMax;
+                    return Strings.toString(streamMax);
                 } else {
                     // receiving stream
-                    return streamAmount + (block.timestamp - streamReference);
+                    return
+                        Strings.toString(
+                            streamAmount + (block.timestamp - streamReference)
+                        );
                 }
             }
         }
@@ -207,12 +231,6 @@ contract Flowy is ERC721URIStorage, IXReceiver {
         uint32 _origin,
         bytes memory _callData
     ) external returns (bytes memory) {
-        // Token validation
-        require(_asset == address(destinationToken), "Incorred token!");
-
-        // Cost validation
-        require(_amount > 0, "Value cannot be 0.");
-
         // Unpack the _callData
         uint256 newStreamReference = abi.decode(_callData, (uint256));
 

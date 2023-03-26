@@ -1,16 +1,12 @@
 const main = async () => {
 	const FlowyContractFactory = await hre.ethers.getContractFactory("Flowy");
 	const FlowyContract = await FlowyContractFactory.deploy(
-		"0xFCa08024A6D4bCc87275b1E4A1E22B71fAD7f649", // Connext on Goerli
-		"0x7ea6eA49B0b0Ae9c5db7907d139D9Cd3439862a1", // TEST on Goerli
+		"0x2334937846Ab2A3FCE747b32587e1A1A2f6EEC5a", // Connext on Mumbai
 		"0xeDb95D8037f769B72AAab41deeC92903A98C9E16", // TEST on Mumbai
-		"0xb3971BCef2D791bc4027BbfedFb47319A4AAaaAa" // Push on Goerli
+		"0x68Db1c8d85C09d546097C65ec7DCBFF4D6497CbF" // TEST on Optimism Goerli
 	);
 	await FlowyContract.deployed();
-	console.log(
-		"Goerli Network -- contract deployed to: ",
-		FlowyContract.address
-	);
+	console.log("Mumbai Network -- contract deployed to: ", FlowyContract.address);
 };
 
 const runMain = async () => {

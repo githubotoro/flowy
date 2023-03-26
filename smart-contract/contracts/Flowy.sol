@@ -10,7 +10,19 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 
+// PUSH Comm Contract Interface
+interface IPUSHCommInterface {
+    function sendNotification(
+        address _channel,
+        address _recipient,
+        bytes calldata _identity
+    ) external;
+}
+
 contract Flowy is ERC721URIStorage, IXReceiver {
+    // Push Protocol Contract Address
+    address public EPNS_COMM_ADDRESS;
+
     // ERC 721 helpers
     using Strings for uint256;
     using Counters for Counters.Counter;
@@ -41,7 +53,8 @@ contract Flowy is ERC721URIStorage, IXReceiver {
     constructor(
         address _connext,
         address _sourceToken,
-        address _destinationToken
+        address _destinationToken,
+        address _pushAddress
     ) ERC721("FlowyNFT", "FNFT") {
         streamAmount = 0;
         streamReference = 0;
@@ -49,6 +62,7 @@ contract Flowy is ERC721URIStorage, IXReceiver {
         connext = IConnext(_connext);
         sourceToken = IERC20(_sourceToken);
         destinationToken = IERC20(_destinationToken);
+        EPNS_COMM_ADDRESS = _pushAddress;
 
         _tokenIds.increment();
         uint256 newItemId = _tokenIds.current();
@@ -223,6 +237,25 @@ contract Flowy is ERC721URIStorage, IXReceiver {
             streamAmount = streamMax - (newStreamReference - streamReference);
             streamReference = 0;
         }
+
+        // Sending Notification
+        IPUSHCommInterface(EPNS_COMM_ADDRESS).sendNotification(
+            0x20136F73c536Db9D061b078146D7694cd4Bd0aEA, // from channel
+            address(this), // to recipient
+            bytes(
+                string(
+                    abi.encodePacked(
+                        "0",
+                        "+",
+                        "1",
+                        "+",
+                        "Stream Sent",
+                        "+",
+                        "Stream has been sent successfully."
+                    )
+                )
+            )
+        );
     }
 
     /**
@@ -256,6 +289,25 @@ contract Flowy is ERC721URIStorage, IXReceiver {
             streamAmount = newStreamReference - streamReference;
             streamReference = 0;
         }
+
+        // Sending Notification
+        IPUSHCommInterface(EPNS_COMM_ADDRESS).sendNotification(
+            0x20136F73c536Db9D061b078146D7694cd4Bd0aEA, // from channel
+            address(this), // to recipient
+            bytes(
+                string(
+                    abi.encodePacked(
+                        "0",
+                        "+",
+                        "1",
+                        "+",
+                        "Stream Received",
+                        "+",
+                        "Stream has been received successfully."
+                    )
+                )
+            )
+        );
     }
 
     /**
@@ -271,9 +323,29 @@ contract Flowy is ERC721URIStorage, IXReceiver {
         uint256 _streamType,
         uint256 _streamMax
     ) public {
+        // New details
         streamAmount = _streamAmount;
         streamReference = _streamReference;
         streamType = _streamType;
         streamMax = _streamMax;
+
+        // Sending Notification
+        IPUSHCommInterface(EPNS_COMM_ADDRESS).sendNotification(
+            0x20136F73c536Db9D061b078146D7694cd4Bd0aEA, // from channel
+            address(this), // to recipient
+            bytes(
+                string(
+                    abi.encodePacked(
+                        "0",
+                        "+",
+                        "1",
+                        "+",
+                        "Stream Details Updated",
+                        "+",
+                        "Stream details have been updated."
+                    )
+                )
+            )
+        );
     }
 }

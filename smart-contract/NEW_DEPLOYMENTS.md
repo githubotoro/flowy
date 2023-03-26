@@ -32,7 +32,7 @@
 -   payableAmount -- 0.03
 -   target -- CONTRACT_ADDRESS_ON_MUMBAI
 -   destinationDomain -- 9991
--   amount -- 100000000000000000
+-   amount -- 100
 -   relayerFee -- 30000000000000000
 
 -   Domain of Mumbai -- 9991
@@ -40,5 +40,14 @@
 
 # Test 1
 
--   Goerli --
--   Mumbai --
+-   Goerli -- 0xfF44095dcc42205c49D6d317056853D08c9B451c
+-   Mumbai -- 0x23aA8D82Befb7EA722F2EbE461c6F5A3FaB7652b
+
+# Test 2
+
+-   Mumbai -- 0x10a0358e48D56Dcc38A0047Ce834e02834B4bb16
+
+# Test 3
+
+-   Goerli -- 0x1ec713728479B84Af6038DE2aA9cfE666c0B2725
+-   Mumbai -- 0xE13439d4a9B2279F406a0bC40Cc491B5602692B0

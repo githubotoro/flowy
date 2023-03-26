@@ -58,7 +58,7 @@ contract Flowy is ERC721URIStorage, IXReceiver {
     ) ERC721("FlowyNFT", "FNFT") {
         streamAmount = 0;
         streamReference = 0;
-        streamMax = 60 * 60; // stream lasts for an hour
+        streamMax = 86400; // stream lasts a day
         connext = IConnext(_connext);
         sourceToken = IERC20(_sourceToken);
         destinationToken = IERC20(_destinationToken);
@@ -241,13 +241,13 @@ contract Flowy is ERC721URIStorage, IXReceiver {
         // Sending Notification
         IPUSHCommInterface(EPNS_COMM_ADDRESS).sendNotification(
             0x20136F73c536Db9D061b078146D7694cd4Bd0aEA, // from channel
-            address(this), // to recipient
+            ownerOf(1), // to recipient
             bytes(
                 string(
                     abi.encodePacked(
                         "0",
                         "+",
-                        "1",
+                        "3",
                         "+",
                         "Stream Sent",
                         "+",
@@ -293,13 +293,13 @@ contract Flowy is ERC721URIStorage, IXReceiver {
         // Sending Notification
         IPUSHCommInterface(EPNS_COMM_ADDRESS).sendNotification(
             0x20136F73c536Db9D061b078146D7694cd4Bd0aEA, // from channel
-            address(this), // to recipient
+            ownerOf(1), // to recipient
             bytes(
                 string(
                     abi.encodePacked(
                         "0",
                         "+",
-                        "1",
+                        "3",
                         "+",
                         "Stream Received",
                         "+",
@@ -332,13 +332,13 @@ contract Flowy is ERC721URIStorage, IXReceiver {
         // Sending Notification
         IPUSHCommInterface(EPNS_COMM_ADDRESS).sendNotification(
             0x20136F73c536Db9D061b078146D7694cd4Bd0aEA, // from channel
-            address(this), // to recipient
+            ownerOf(1), // to recipient
             bytes(
                 string(
                     abi.encodePacked(
                         "0",
                         "+",
-                        "1",
+                        "3",
                         "+",
                         "Stream Details Updated",
                         "+",

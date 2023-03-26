@@ -110,7 +110,7 @@
 -   **Goerli** -- [0x1ec713728479B84Af6038DE2aA9cfE666c0B2725](https://goerli.etherscan.io/address/0x1ec713728479B84Af6038DE2aA9cfE666c0B2725)
 -   **Mumbai** -- [0xE13439d4a9B2279F406a0bC40Cc491B5602692B0](https://mumbai.polygonscan.com/address/0xE13439d4a9B2279F406a0bC40Cc491B5602692B0)
 
-#### `Test 15` -> EUREKA! -- everyhting works, FINALLY!
+#### `Test 15` -> EUREKA! -- everything works, FINALLY!
 
 -   **Goerli** -- [0x6C7132d30167F39Ef6DA9287916d09A5962b8E51](https://goerli.etherscan.io/address/0x6C7132d30167F39Ef6DA9287916d09A5962b8E51)
 -   **Mumbai** -- [0x0029754f88896E3FE639Dad25c1460223231F032](https://mumbai.polygonscan.com/address/0x0029754f88896E3FE639Dad25c1460223231F032)

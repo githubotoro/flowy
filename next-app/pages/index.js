@@ -133,6 +133,7 @@ const Home = () => {
 			try {
 				const _goerliAmount = await goerliContract.currAmount();
 				setGoerliAmount(parseInt(_goerliAmount));
+				setCurrAmount(parseInt(_goerliAmount));
 
 				const _streamDetails = await goerliContract.getStreamDetails();
 				setStreamDetails({
@@ -155,39 +156,17 @@ const Home = () => {
 		if (streamDetails.streamReference === 0) {
 			return goerliAmount;
 		} else {
-			if (streamDetails.streamType === 0) {
-				if (
-					currTimestamp - streamDetails.streamReference >=
-					streamDetails.streamAmount
-				) {
-					return 0;
-				} else {
-					return (
-						streamDetails.streamAmount -
-						(currTimestamp - streamDetails.streamReference)
-					);
-				}
-			} else {
-				if (
-					streamDetails.streamAmount +
-						(block.timestamp - streamDetails.streamReference) >=
-					streamDetails.streamMax
-				) {
-					return streamDetails.streamMax;
-				} else {
-					return (
-						streamDetails.streamAmount +
-						(currTimestamp - streamDetails.streamReference)
-					);
-				}
-			}
+			return currAmount;
 		}
 	};
 
 	useEffect(() => {
 		const interval = setInterval(() => {
-			setCurrAmount(getCurrAmount());
-			console.log(getCurrAmount());
+			if (streamDetails.streamReference === 0) {
+				setCurrAmount(getCurrAmount());
+			} else {
+				setCurrAmount(getCurrAmount() + 1);
+			}
 		}, 1000);
 
 		return () => clearInterval(interval);

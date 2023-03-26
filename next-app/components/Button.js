@@ -7,7 +7,7 @@ export const Button = ({ cta, onClick, props }) => {
 		{
 			variants: {
 				size: {
-					default: "text-xl font-black",
+					default: "text-md font-black",
 				},
 				color: {
 					dark: "bg-isSystemDarkTertiary",

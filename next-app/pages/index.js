@@ -29,6 +29,17 @@ const Home = () => {
 	const { address, isConnected } = useAccount();
 	const { data: signer } = useSigner();
 
+	const [currAmount, setCurrAmount] = useState(0);
+	const [goerliAmount, setGoerliAmount] = useState(0);
+
+	const [streamDetails, setStreamDetails] = useState({
+		status: "loading",
+		streamReference: 0,
+		streamAmount: 0,
+		streamType: 0,
+		streamMax: 0,
+	});
+
 	const goerliProvider = new ethers.providers.AlchemyProvider(
 		"goerli",
 		process.env.NEXT_PUBLIC_ALCHEMY_ID
@@ -94,11 +105,43 @@ const Home = () => {
 		}
 	};
 
+	const stopStream = async () => {
+		try {
+			const Flowy = new ethers.Contract(
+				FLOWY_ADDRESS_GOERLI,
+				FLOWY_ABI,
+				signer
+			);
+			const txn = await Flowy.xSend(
+				FLOWY_ADDRESS_MUMBAI,
+				9991,
+				100,
+				30000000000000000n,
+				{
+					value: 30000000000000000n,
+				}
+			);
+			await txn.wait();
+			setEvent(!event);
+		} catch (err) {
+			console.log(err);
+		}
+	};
+
 	useEffect(() => {
 		const getStreamDetails = async () => {
 			try {
-				const streamDetails = await goerliContract.getStreamDetails();
-				console.log(streamDetails);
+				const _goerliAmount = await goerliContract.currAmount();
+				setGoerliAmount(parseInt(_goerliAmount));
+
+				const _streamDetails = await goerliContract.getStreamDetails();
+				setStreamDetails({
+					status: "fetched",
+					streamReference: parseInt(_streamDetails[0]),
+					streamAmount: parseInt(_streamDetails[1]),
+					streamType: parseInt(_streamDetails[2]),
+					streamMax: parseInt(_streamDetails[3]),
+				});
 			} catch (err) {
 				console.log(err);
 			}
@@ -107,25 +150,48 @@ const Home = () => {
 		getStreamDetails();
 	}, [event]);
 
-	// useEffect(() => {
-	// 	const setNewAmount = async () => {
-	// 		setInterval(() => {
-	// 			setAmount(amountMax - amount + 1);
-	// 		}, 1000);
-	// 	};
+	const getCurrAmount = () => {
+		const currTimestamp = Math.floor(Date.now() / 1000);
+		if (streamDetails.streamReference === 0) {
+			return goerliAmount;
+		} else {
+			if (streamDetails.streamType === 0) {
+				if (
+					currTimestamp - streamDetails.streamReference >=
+					streamDetails.streamAmount
+				) {
+					return 0;
+				} else {
+					return (
+						streamDetails.streamAmount -
+						(currTimestamp - streamDetails.streamReference)
+					);
+				}
+			} else {
+				if (
+					streamDetails.streamAmount +
+						(block.timestamp - streamDetails.streamReference) >=
+					streamDetails.streamMax
+				) {
+					return streamDetails.streamMax;
+				} else {
+					return (
+						streamDetails.streamAmount +
+						(currTimestamp - streamDetails.streamReference)
+					);
+				}
+			}
+		}
+	};
 
-	// 	if (
-	// 		streamReference !== undefined &&
-	// 		parseInt(streamReference) !== 0 &&
-	// 		streamMax !== undefined &&
-	// 		parseInt(streamMax) !== 0 &&
-	// 		amount !== "loading"
-	// 	) {
-	// 		setNewAmount();
-	// 	}
-	// }, [amount]);
+	useEffect(() => {
+		const interval = setInterval(() => {
+			setCurrAmount(getCurrAmount());
+			console.log(getCurrAmount());
+		}, 1000);
 
-	useEffect(() => {}, []);
+		return () => clearInterval(interval);
+	}, [currAmount, streamDetails]);
 
 	const svgClasses =
 		"bg-isSystemLightSecondary cursor-pointer shadow-sm rounded-lg py-1 px-2 hover:bg-isWhite transition-all duration-300 ease-in-out";
@@ -151,13 +217,13 @@ const Home = () => {
 					viewBox="0 0 200 200"
 					xmlns="http://www.w3.org/2000/svg"
 				>
-					<text x="100" y="100" text-anchor="middle">
+					<text x="100" y="100" textAnchor="middle">
 						&lt;
-						{/* {amount === "loading"
-							? amount
-							: nfts[id].name === "Goerli"
-							? amountMax - Math.floor(Date.now() / 1000) - amount
-							: Math.floor(Date.now() / 1000) - amount} */}
+						{streamDetails.status === "loading"
+							? streamDetails.status
+							: id === "goerli"
+							? currAmount
+							: streamDetails.streamMax - currAmount}
 						&gt;
 					</text>
 				</svg>
@@ -211,8 +277,8 @@ const Home = () => {
 				</div>
 			</div>
 
-			<main className="flex flex-col items-center w-full min-h-screen p-3 font-sans place-content-center bg-isSystemDarkPrimary text-isLabelDarkSecondary">
-				<div className="-mt-6 text-4xl font-bold leading-none drop-shadow-md">
+			<main className="flex flex-col items-center w-full min-h-screen p-3 font-sans place-content-start bg-isSystemDarkPrimary text-isLabelDarkSecondary">
+				<div className="mt-6 text-4xl font-bold leading-none drop-shadow-md">
 					<span className="mx-1 text-isWhite">Stream</span>
 					<span className="mx-1 text-isBlueDark">NFTs</span>
 					<span className="mx-1 text-isGreenDark">cross-chain</span>
@@ -241,6 +307,9 @@ const Home = () => {
 						}}
 					/>
 					<Button
+						onClick={async () => {
+							stopStream();
+						}}
 						cta="Stop Stream"
 						props={{
 							color: "red",

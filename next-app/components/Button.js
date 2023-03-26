@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 
 export const Button = ({ cta, onClick, props }) => {
 	const classes = cva(
-		"cursor-pointer group outline-none focus:outline-none shadow-sm py-[4px] px-[12px] text-isLabelDarkPrimary font-black font-sans",
+		"cursor-pointer group outline-none focus:outline-none shadow-sm py-[4px] px-[12px] text-isLabelDarkPrimary font-bold font-sans",
 		{
 			variants: {
 				size: {
@@ -46,7 +46,11 @@ export const Button = ({ cta, onClick, props }) => {
 	);
 
 	return (
-		<motion.button whileTap={{ scale: 0.5 }} onClick={onClick} className={cx(classes({ ...props }))}>
+		<motion.button
+			whileTap={{ scale: 0.5 }}
+			onClick={onClick}
+			className={cx(classes({ ...props }))}
+		>
 			{cta}
 		</motion.button>
 	);

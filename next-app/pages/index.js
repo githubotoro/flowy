@@ -21,22 +21,47 @@ import { Etherscan } from "@/components/etherscan";
 import { Opensea } from "@/components/opensea";
 
 const Home = () => {
-	const FLOWY_ADDRESS_MUMBAI = "0xEA32B11df38BeeBB3f22c81a46eB8D07FaeB284B";
-	const FLOWY_ADDRESS_OPTIMISM = "0x29022Ef6818CD2e2A70a10B278695BD555ba8b1b";
+	const FLOWY_ADDRESS_GOERLI = "0x6C7132d30167F39Ef6DA9287916d09A5962b8E51";
+	const FLOWY_ADDRESS_MUMBAI = "0x0029754f88896E3FE639Dad25c1460223231F032";
 	const FLOWY_ABI = abi.abi;
-	const [currStreamReference, setCurrStreamReference] = useState("loading");
-	const [currStreamMax, setCurrStreamMax] = useState(0);
-	const [isInitial, setIsInitial] = useState(true);
+
 	const [event, setEvent] = useState(false);
 	const { address, isConnected } = useAccount();
 	const { data: signer } = useSigner();
 
+	const goerliProvider = new ethers.providers.AlchemyProvider(
+		"goerli",
+		process.env.NEXT_PUBLIC_ALCHEMY_ID
+	);
+	const mumbaiProvider = new ethers.providers.AlchemyProvider(
+		"maticmum",
+		process.env.NEXT_PUBLIC_ALCHEMY_ID
+	);
+	const goerliSigner = new ethers.Wallet(
+		process.env.NEXT_PUBLIC_PRIVATE_KEY,
+		goerliProvider
+	);
+	const mumbaiSigner = new ethers.Wallet(
+		process.env.NEXT_PUBLIC_PRIVATE_KEY,
+		mumbaiProvider
+	);
+	const goerliContract = new ethers.Contract(
+		FLOWY_ADDRESS_GOERLI,
+		FLOWY_ABI,
+		goerliSigner
+	);
+	const mumbaiContract = new ethers.Contract(
+		FLOWY_ADDRESS_MUMBAI,
+		FLOWY_ABI,
+		mumbaiSigner
+	);
+
 	const nfts = {
-		optimism: {
-			color: "red",
-			name: "Optimism Goerli",
-			etherscan: `https://goerli-optimism.etherscan.io/address/${FLOWY_ADDRESS_OPTIMISM}`,
-			opensea: `https://testnets.opensea.io/assets/optimism-goerli/${FLOWY_ADDRESS_OPTIMISM}/1`,
+		goerli: {
+			color: "indigo",
+			name: "Goerli",
+			etherscan: `https://goerli.etherscan.io/address/${FLOWY_ADDRESS_GOERLI}`,
+			opensea: `https://testnets.opensea.io/assets/goerli/${FLOWY_ADDRESS_GOERLI}/1`,
 		},
 		mumbai: {
 			color: "purple",
@@ -46,20 +71,22 @@ const Home = () => {
 		},
 	};
 
-	const { data: streamDetails } = useContractRead({
-		address: FLOWY_ADDRESS_OPTIMISM,
-		abi: FLOWY_ABI,
-		functionName: "getStreamDetails",
-		watch: true,
-		cacheOnBlock: true,
-	});
-
 	const startStream = async () => {
 		try {
-			const Flowy = new ethers.Contract(FLOWY_ADDRESS_OPTIMISM, FLOWY_ABI, signer);
-			const txn = await Flowy.xSend(FLOWY_ADDRESS_MUMBAI, 9991, 100, 30000000000000000n, {
-				value: 30000000000000000n,
-			});
+			const Flowy = new ethers.Contract(
+				FLOWY_ADDRESS_GOERLI,
+				FLOWY_ABI,
+				signer
+			);
+			const txn = await Flowy.xSend(
+				FLOWY_ADDRESS_MUMBAI,
+				9991,
+				100,
+				30000000000000000n,
+				{
+					value: 30000000000000000n,
+				}
+			);
 			await txn.wait();
 			setEvent(!event);
 		} catch (err) {
@@ -68,28 +95,37 @@ const Home = () => {
 	};
 
 	useEffect(() => {
-		if (streamDetails !== undefined) {
-			setCurrStreamReference(parseInt(streamMax) - (Math.floor(Date.now() / 1000) - parseInt(streamReference)));
-		}
-	}, [streamReference]);
-
-	useEffect(() => {
-		const setNewAmount = async () => {
-			setInterval(() => {
-				setAmount(amountMax - amount + 1);
-			}, 1000);
+		const getStreamDetails = async () => {
+			try {
+				const streamDetails = await goerliContract.getStreamDetails();
+				console.log(streamDetails);
+			} catch (err) {
+				console.log(err);
+			}
 		};
 
-		if (
-			streamReference !== undefined &&
-			parseInt(streamReference) !== 0 &&
-			streamMax !== undefined &&
-			parseInt(streamMax) !== 0 &&
-			amount !== "loading"
-		) {
-			setNewAmount();
-		}
-	}, [amount]);
+		getStreamDetails();
+	}, [event]);
+
+	// useEffect(() => {
+	// 	const setNewAmount = async () => {
+	// 		setInterval(() => {
+	// 			setAmount(amountMax - amount + 1);
+	// 		}, 1000);
+	// 	};
+
+	// 	if (
+	// 		streamReference !== undefined &&
+	// 		parseInt(streamReference) !== 0 &&
+	// 		streamMax !== undefined &&
+	// 		parseInt(streamMax) !== 0 &&
+	// 		amount !== "loading"
+	// 	) {
+	// 		setNewAmount();
+	// 	}
+	// }, [amount]);
+
+	useEffect(() => {}, []);
 
 	const svgClasses =
 		"bg-isSystemLightSecondary cursor-pointer shadow-sm rounded-lg py-1 px-2 hover:bg-isWhite transition-all duration-300 ease-in-out";
@@ -109,23 +145,36 @@ const Home = () => {
 					}}
 				/>
 
-				<svg width="100%" height="100%" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+				<svg
+					width="100%"
+					height="100%"
+					viewBox="0 0 200 200"
+					xmlns="http://www.w3.org/2000/svg"
+				>
 					<text x="100" y="100" text-anchor="middle">
 						&lt;
-						{amount === "loading"
+						{/* {amount === "loading"
 							? amount
-							: nfts[id].name === "Optimism Goerli"
+							: nfts[id].name === "Goerli"
 							? amountMax - Math.floor(Date.now() / 1000) - amount
-							: Math.floor(Date.now() / 1000) - amount}
+							: Math.floor(Date.now() / 1000) - amount} */}
 						&gt;
 					</text>
 				</svg>
 
 				<div className="grid items-center w-full grid-cols-2 gap-5 p-2 shadow-lg rounded-xl bg-isLabelLightSecondary">
-					<a href={nfts[id].etherscan} target="_blank" rel="noopener noreferrer">
+					<a
+						href={nfts[id].etherscan}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
 						<Etherscan classes={svgClasses} />
 					</a>
-					<a href={nfts[id].opensea} target="_blank" rel="noopener noreferrer">
+					<a
+						href={nfts[id].opensea}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
 						<Opensea classes={svgClasses} />
 					</a>
 				</div>
@@ -137,13 +186,19 @@ const Home = () => {
 		<>
 			<Head>
 				<title>Flowy</title>
-				<meta name="description" content="Generated by create next app" />
-				<meta name="viewport" content="width=device-width, initial-scale=1" />
+				<meta
+					name="description"
+					content="Generated by create next app"
+				/>
+				<meta
+					name="viewport"
+					content="width=device-width, initial-scale=1"
+				/>
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
 
 			<div className="sticky top-0 z-50 flex flex-row items-center w-full place-content-center bg-isSystemDarkPrimary text-isGrayDarkEmphasis6 ">
-				<div className="flex flex-row items-center justify-between w-full max-w-4xl px-2 py-2 my-3 shadow-sm bg-isSystemDarkSecondary rounded-xl ">
+				<div className="flex flex-row items-center justify-between w-full max-w-2xl px-2 py-2 my-3 shadow-sm bg-isSystemDarkSecondary rounded-xl ">
 					<Button
 						cta="Flowy"
 						props={{
@@ -157,30 +212,41 @@ const Home = () => {
 			</div>
 
 			<main className="flex flex-col items-center w-full min-h-screen p-3 font-sans place-content-center bg-isSystemDarkPrimary text-isLabelDarkSecondary">
-				<div className="-mt-32 text-4xl font-black leading-none drop-shadow-md">
+				<div className="-mt-6 text-4xl font-bold leading-none drop-shadow-md">
 					<span className="mx-1 text-isWhite">Stream</span>
 					<span className="mx-1 text-isBlueDark">NFTs</span>
 					<span className="mx-1 text-isGreenDark">cross-chain</span>
 				</div>
 				<div className="pt-2 font-mono text-lg italic font-medium tracking-tighter">
 					Flowy helps you stream NFT across chains in real-time @{" "}
-					<span className="font-black text-isLabelDarkPrimary">1 click</span>
+					<span className="font-semibold text-isLabelDarkPrimary">
+						1 click
+					</span>
 				</div>
 
-				<div className="grid w-full max-w-2xl grid-cols-2 gap-5 py-10">
-					<NFT id="optimism" />
+				<div className="grid w-full max-w-lg grid-cols-2 gap-5 py-10">
+					<NFT id="goerli" />
 					<NFT id="mumbai" />
 				</div>
 
-				<div className="grid items-center w-full max-w-2xl grid-cols-2 gap-5 pb-5">
+				<div className="grid items-center w-full max-w-lg grid-cols-2 gap-5 pb-5">
 					<Button
 						onClick={async () => {
 							startStream();
 						}}
 						cta="Start Stream"
-						props={{ color: "green", className: "w-full font-mono text-2xl rounded-xl" }}
+						props={{
+							color: "green",
+							className: "w-full font-mono text-2xl rounded-xl",
+						}}
 					/>
-					<Button cta="Stop Stream" props={{ color: "red", className: "w-full text-2xl rounded-xl" }} />
+					<Button
+						cta="Stop Stream"
+						props={{
+							color: "red",
+							className: "w-full text-2xl rounded-xl",
+						}}
+					/>
 				</div>
 			</main>
 		</>

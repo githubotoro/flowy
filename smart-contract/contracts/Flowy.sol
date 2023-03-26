@@ -57,6 +57,17 @@ contract Flowy is ERC721URIStorage, IXReceiver {
     }
 
     /**
+     * @dev Get current stream details
+     */
+    function getStreamDetails()
+        public
+        view
+        returns (uint256, uint256, uint256, uint256)
+    {
+        return (streamReference, streamAmount, streamType, streamMax);
+    }
+
+    /**
      * @dev Generate NFT for the given NFT
      * @param tokenId Token id of the required NFT
      */

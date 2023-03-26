@@ -165,7 +165,7 @@ const Home = () => {
 			if (streamDetails.streamReference === 0) {
 				setCurrAmount(getCurrAmount());
 			} else {
-				setCurrAmount(getCurrAmount() + 1);
+				setCurrAmount(getCurrAmount() - 1);
 			}
 		}, 1000);
 
@@ -202,7 +202,7 @@ const Home = () => {
 							? streamDetails.status
 							: id === "goerli"
 							? currAmount
-							: streamDetails.streamMax - currAmount}
+							: Math.abs(streamDetails.streamMax - currAmount)}
 						&gt;
 					</text>
 				</svg>
